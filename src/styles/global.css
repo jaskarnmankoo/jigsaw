@@ -41,3 +41,10 @@ body {
   height: 405px;
   width: 405px;
 }
+
+@media (prefers-color-scheme: light) {
+  .board3x3,
+  .board4x4 {
+    background: #ddd;
+  }
+}
