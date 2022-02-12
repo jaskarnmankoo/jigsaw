@@ -38,6 +38,7 @@ const puzzles4x4 = [
   puzzleF4x4
 ];
 
+/** Renders the home page with difficulty selection */
 export default function Home(): JSX.Element {
   const [board, setBoard] = React.useState<number[][] | null>(null);
   const [difficulty, setDifficulty] = React.useState('');

@@ -10,6 +10,7 @@ type Props = {
   onClick: () => void;
 };
 
+/** Renders the Tile for a board */
 export default function Tile({
   done,
   index,
