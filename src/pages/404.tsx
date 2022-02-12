@@ -12,7 +12,7 @@ export default function NotFound(): JSX.Element {
     <>
       <SearchEngineOptimization title="Oops..." />
       <main className="grid grid-cols-1 gap-4 text-center">
-        <h1 className="bold text-xl">Jigsaw</h1>
+        <h1 className="bold">Jigsaw</h1>
         <h2 className="bold text-xl">Page not found!</h2>
         <p>Oops! The page you are looking for has been removed or relocated.</p>
         <Link className="underline" to={ROUTES.HOME}>
