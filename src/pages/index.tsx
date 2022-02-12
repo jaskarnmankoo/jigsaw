@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import _ from 'lodash';
+
 import SearchEngineOptimization from '../components/common/SearchEngineOptimization';
 import Tile from '../components/tile';
 
@@ -19,7 +21,6 @@ import puzzleD4x4 from '../assets/4x4/puzzle4.jpg';
 import puzzleE4x4 from '../assets/4x4/puzzle5.jpg';
 import puzzleF4x4 from '../assets/4x4/puzzle6.jpg';
 
-const moves = ['up', 'down', 'left', 'right'];
 const puzzles3x3 = [
   puzzleA3x3,
   puzzleB3x3,
@@ -38,164 +39,117 @@ const puzzles4x4 = [
 ];
 
 export default function Home(): JSX.Element {
-  const [difficulty, setDifficulty] = React.useState('');
   const [board, setBoard] = React.useState<number[][] | null>(null);
-  const [jigsaw, setJigsaw] = React.useState('');
+  const [difficulty, setDifficulty] = React.useState('');
+  const [done, setDone] = React.useState(false);
+  const [start, setStart] = React.useState(false);
 
-  const solvedBoard = React.useRef<number[][] | null>(null);
-  const rows = React.useRef(3);
-  const cols = React.useRef(3);
-  const tiles = React.useRef(0);
   const emptyTile = React.useRef(0);
-
+  const moveStack = React.useRef<number[][][] | null>(null);
   const numMoves = React.useRef(0);
-  const moveStack = React.useRef<number[][] | null>(null);
+  const solution = React.useRef<number[][] | null>(null);
+  const square = React.useRef(3);
 
-  const shuffling = React.useRef(false);
+  const jigsaw = React.useRef('');
+  const size = React.useRef(300);
 
-  const isSolved = React.useCallback(() => {
-    if (!board || !solvedBoard.current) return;
-
-    for (let i = 0; i < tiles.current; i++) {
-      if (
-        board[i][0] !== solvedBoard.current[i][0] ||
-        board[i][1] !== solvedBoard.current[i][1]
-      )
-        return false;
-    }
-    return true;
-  }, [board]);
-
-  const canMoveTile = React.useCallback(
+  const moveTile = React.useCallback(
     (index: number) => {
-      if (index < 0 || index >= tiles.current || !board) return false;
+      if (!board || !moveStack.current) return;
 
       const tilePos = board[index];
       const emptyPos = board[emptyTile.current];
 
+      let validMove = false;
+
       if (tilePos[0] === emptyPos[0])
-        return Math.abs(tilePos[1] - emptyPos[1]) === 1;
+        validMove = Math.abs(tilePos[1] - emptyPos[1]) === 1;
       else if (tilePos[1] === emptyPos[1])
-        return Math.abs(tilePos[0] - emptyPos[0]) === 1;
-      else return false;
+        validMove = Math.abs(tilePos[0] - emptyPos[0]) === 1;
+
+      const boardCopy = [...board];
+
+      if (validMove) {
+        const emptyPosition = [...board[emptyTile.current]];
+        const tilePosition = [...board[index]];
+
+        boardCopy[emptyTile.current] = tilePosition;
+        boardCopy[index] = emptyPosition;
+
+        numMoves.current += 1;
+
+        moveStack.current.push(board);
+      }
+
+      if (_.isEqual(boardCopy, solution.current)) {
+        setDone(true);
+      }
+
+      setBoard(boardCopy);
     },
     [board]
   );
 
-  const moveTile = React.useCallback(
-    (index: number) => {
-      if (!shuffling.current && isSolved()) return false;
-      if (!canMoveTile(index) || !board || !moveStack.current) return false;
-
-      const emptyPosition = [...board[emptyTile.current]];
-      const tilePosition = [...board[index]];
-
-      const boardAfterMove = [...board];
-      boardAfterMove[emptyTile.current] = tilePosition;
-      boardAfterMove[index] = emptyPosition;
-
-      // if (!shuffling.current) moveStack.current.push(board.current);
-      setBoard(boardAfterMove);
-      if (!shuffling.current) numMoves.current++;
-
-      return true;
-    },
-    [board, canMoveTile, isSolved]
-  );
-
-  const moveInDirection = React.useCallback(
-    (direction: string) => {
-      if (!board) return;
-
-      const epos = board[emptyTile.current];
-      const posToMove =
-        direction === 'up'
-          ? [epos[0] + 1, epos[1]]
-          : direction === 'down'
-          ? [epos[0] - 1, epos[1]]
-          : direction === 'left'
-          ? [epos[0], epos[1] + 1]
-          : direction === 'right'
-          ? [epos[0], epos[1] - 1]
-          : epos;
-      let tileToMove = emptyTile.current;
-      for (let i = 0; i < tiles.current; i++) {
-        if (board[i][0] === posToMove[0] && board[i][1] === posToMove[1]) {
-          tileToMove = i;
-          break;
-        }
-      }
-
-      moveTile(tileToMove);
-    },
-    [board, moveTile]
-  );
-
   const shuffle = React.useCallback(() => {
-    shuffling.current = true;
+    if (!board) return;
 
-    let shuffleMoves = rand(60, 80);
+    const boardCopy = [...board];
+    boardCopy.sort(() => Math.random() - 0.5);
+    setBoard(boardCopy);
 
-    while (shuffleMoves-- > 0) {
-      moveInDirection(moves[rand(0, 3)]);
-    }
-
-    shuffling.current = false;
-  }, [moveInDirection]);
+    setStart(true);
+  }, [board]);
 
   const startGame3x3 = React.useCallback(() => {
-    setJigsaw(puzzles3x3[rand(0, 5)]);
-
-    rows.current = 3;
-    cols.current = 3;
-    tiles.current = rows.current * cols.current;
-    emptyTile.current = tiles.current - 1;
+    jigsaw.current = puzzles3x3[rand(0, 5)];
+    size.current = 300;
 
     numMoves.current = 0;
+    square.current = 3;
+    emptyTile.current = square.current ** 2 - 1;
     moveStack.current = [];
 
     const generatedBoard = [];
-    for (let i = 0; i < tiles.current; i++) {
-      generatedBoard.push([Math.floor(i / rows.current), i % cols.current]);
+    for (let i = 0; i < square.current ** 2; i++) {
+      generatedBoard.push([Math.floor(i / square.current), i % square.current]);
     }
+    solution.current = generatedBoard;
     setBoard(generatedBoard);
-    solvedBoard.current = generatedBoard;
-
-    shuffle();
 
     setDifficulty('3x3');
-  }, [shuffle]);
+  }, []);
 
   const startGame4x4 = React.useCallback(() => {
-    setJigsaw(puzzles4x4[rand(0, 5)]);
-
-    rows.current = 4;
-    cols.current = 4;
-    tiles.current = rows.current * cols.current;
-    emptyTile.current = tiles.current - 1;
+    jigsaw.current = puzzles4x4[rand(0, 5)];
+    size.current = 400;
 
     numMoves.current = 0;
+    square.current = 4;
+    emptyTile.current = square.current ** 2 - 1;
     moveStack.current = [];
 
     const generatedBoard = [];
-    for (let i = 0; i < tiles.current; i++) {
-      generatedBoard.push([Math.floor(i / rows.current), i % cols.current]);
+    for (let i = 0; i < square.current ** 2; i++) {
+      generatedBoard.push([Math.floor(i / square.current), i % square.current]);
     }
+    solution.current = generatedBoard;
     setBoard(generatedBoard);
-    solvedBoard.current = generatedBoard;
-
-    shuffle();
 
     setDifficulty('4x4');
-  }, [shuffle]);
+  }, []);
 
   const undo = React.useCallback(() => {
-    if (!moveStack.current || !board) return;
+    if (!moveStack.current) return;
     if (moveStack.current.length === 0) return;
 
-    moveStack.current.pop();
-    setBoard(moveStack.current);
-  }, [board]);
+    const boardCopy = moveStack.current.pop();
+
+    if (!boardCopy) return;
+
+    setBoard(boardCopy);
+  }, []);
+
+  const playAgain = React.useCallback(() => window.location.reload(), []);
 
   return (
     <>
@@ -223,54 +177,72 @@ export default function Home(): JSX.Element {
           </>
         ) : (
           <>
-            {board && (
-              <div className="grid grid-cols-1 md:grid-cols-2">
-                <div className="grid grid-cols-1">
-                  <div className="grid grid-cols-2">
-                    <p className="self-center text-xl">
-                      Move count: {numMoves.current}
-                    </p>
-                    <button className="game-mode" onClick={undo}>
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              <div className="grid grid-cols-1">
+                <div className="grid grid-cols-3">
+                  <p className="self-center text-xl">
+                    Move count: {numMoves.current}
+                  </p>
+                  {!start && (
+                    <button
+                      type="button"
+                      className="game-mode"
+                      onClick={shuffle}
+                    >
+                      Start
+                    </button>
+                  )}
+                  {start && (
+                    <button
+                      type="button"
+                      className="game-mode"
+                      onClick={undo}
+                      disabled={done}
+                    >
                       UNDO
                     </button>
-                  </div>
-                  <div className="grid grid-cols-1 justify-items-center">
-                    <div className="board3x3 relative">
+                  )}
+                </div>
+                <div className="grid grid-cols-1 justify-items-center">
+                  {board && (
+                    <div className={`board${difficulty} relative`}>
                       {board.slice(0, -1).map((pos, index) => (
-                        <React.Fragment key={`tile number ${pos}`}>
+                        <React.Fragment key={`tile ${pos}`}>
                           <Tile
-                            jigsaw={jigsaw}
+                            done={done}
+                            jigsaw={jigsaw.current}
                             index={index}
                             pos={pos}
+                            start={start}
+                            square={square.current}
                             onClick={() => moveTile(index)}
                           />
                         </React.Fragment>
                       ))}
                     </div>
-                    {isSolved() && (
-                      <button
-                        className="game-mode"
-                        onClick={
-                          difficulty === '3x3' ? startGame3x3 : startGame4x4
-                        }
-                      >
-                        Play Again?
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-1">
-                  <p className="self-center text-center text-xl">Solution</p>
-                  <img
-                    className="justify-self-center"
-                    src={jigsaw}
-                    alt=""
-                    width={300}
-                    height={300}
-                  />
+                  )}
+                  {done && (
+                    <button
+                      type="button"
+                      className="game-mode"
+                      onClick={playAgain}
+                    >
+                      Play Again?
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
+              <div className="grid grid-cols-1">
+                <p className="self-center text-center text-xl">Solution</p>
+                <img
+                  className="justify-self-center"
+                  src={jigsaw.current}
+                  alt=""
+                  width={size.current}
+                  height={size.current}
+                />
+              </div>
+            </div>
           </>
         )}
       </main>

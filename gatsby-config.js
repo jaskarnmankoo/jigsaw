@@ -15,6 +15,7 @@ const gatsbyRequiredRules = path.join(
 );
 
 module.exports = {
+  pathPrefix: '/jigsaw',
   plugins: [
     'gatsby-plugin-csp', //IF ANALYTICS DOESN'T WORK LOOK HERE
     'gatsby-plugin-postcss',
