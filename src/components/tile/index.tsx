@@ -26,6 +26,7 @@ export default function Tile({
 
   return (
     <button
+      type="button"
       aria-label="move-tile"
       className="tile"
       onClick={onClick}

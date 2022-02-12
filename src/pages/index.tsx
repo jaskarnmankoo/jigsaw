@@ -176,74 +176,68 @@ export default function Home(): JSX.Element {
             </div>
           </>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              <div className="grid grid-cols-1">
-                <div className="grid grid-cols-3">
-                  <p className="self-center text-xl">
-                    Move count: {numMoves.current}
-                  </p>
-                  {!start && (
-                    <button
-                      type="button"
-                      className="game-mode"
-                      onClick={shuffle}
-                    >
-                      Start
-                    </button>
-                  )}
-                  {start && (
-                    <button
-                      type="button"
-                      className="game-mode"
-                      onClick={undo}
-                      disabled={done}
-                    >
-                      UNDO
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 justify-items-center">
-                  {board && (
-                    <div className={`board${difficulty} relative`}>
-                      {board.slice(0, -1).map((pos, index) => (
-                        <React.Fragment key={`tile ${String(pos)}`}>
-                          <Tile
-                            done={done}
-                            jigsaw={jigsaw.current}
-                            index={index}
-                            pos={pos}
-                            start={start}
-                            square={square.current}
-                            onClick={() => moveTile(index)}
-                          />
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  )}
-                  {done && (
-                    <button
-                      type="button"
-                      className="game-mode"
-                      onClick={playAgain}
-                    >
-                      Play Again?
-                    </button>
-                  )}
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="grid grid-cols-1">
+              <div className="grid grid-cols-3">
+                <p className="self-center text-xl">
+                  Move count: {numMoves.current}
+                </p>
+                {!start && (
+                  <button type="button" className="game-mode" onClick={shuffle}>
+                    Start
+                  </button>
+                )}
+                {start && (
+                  <button
+                    type="button"
+                    className="game-mode"
+                    onClick={undo}
+                    disabled={done}
+                  >
+                    UNDO
+                  </button>
+                )}
               </div>
-              <div className="grid grid-cols-1">
-                <p className="self-center text-center text-xl">Solution</p>
-                <img
-                  className="justify-self-center"
-                  src={jigsaw.current}
-                  alt=""
-                  width={size.current}
-                  height={size.current}
-                />
+              <div className="grid grid-cols-1 justify-items-center">
+                {board && (
+                  <div className={`board${difficulty} relative`}>
+                    {board.slice(0, -1).map((pos, index) => (
+                      <React.Fragment key={`tile ${String(pos)}`}>
+                        <Tile
+                          done={done}
+                          jigsaw={jigsaw.current}
+                          index={index}
+                          pos={pos}
+                          start={start}
+                          square={square.current}
+                          onClick={() => moveTile(index)}
+                        />
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+                {done && (
+                  <button
+                    type="button"
+                    className="game-mode"
+                    onClick={playAgain}
+                  >
+                    Play Again?
+                  </button>
+                )}
               </div>
             </div>
-          </>
+            <div className="grid grid-cols-1">
+              <p className="self-center text-center text-xl">Solution</p>
+              <img
+                className="justify-self-center"
+                src={jigsaw.current}
+                alt=""
+                width={size.current}
+                height={size.current}
+              />
+            </div>
+          </div>
         )}
       </main>
     </>
