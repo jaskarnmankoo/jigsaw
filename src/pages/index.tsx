@@ -207,7 +207,7 @@ export default function Home(): JSX.Element {
                   {board && (
                     <div className={`board${difficulty} relative`}>
                       {board.slice(0, -1).map((pos, index) => (
-                        <React.Fragment key={`tile ${pos}`}>
+                        <React.Fragment key={`tile ${String(pos)}`}>
                           <Tile
                             done={done}
                             jigsaw={jigsaw.current}
