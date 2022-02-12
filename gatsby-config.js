@@ -33,8 +33,8 @@ module.exports = {
     { resolve: 'gatsby-plugin-html-attributes', options: { lang: 'en' } }
   ],
   siteMetadata: {
-    title: 'WEBSITE TITLE',
-    description: 'WEBSITE DESCRIPTION',
+    title: 'Jigsaw',
+    description: 'Single player version of Jigsaw Puzzles',
     author: 'Jaskarn Mankoo',
     contact: '416-887-0730'
   }
