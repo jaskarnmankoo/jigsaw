@@ -1,7 +1,5 @@
 import * as React from 'react';
 
-import _ from 'lodash';
-
 import SearchEngineOptimization from '../components/common/SearchEngineOptimization';
 import Tile from '../components/tile';
 
@@ -53,43 +51,6 @@ export default function Home(): JSX.Element {
 
   const jigsaw = React.useRef('');
   const size = React.useRef(300);
-
-  const moveTile = React.useCallback(
-    (index: number) => {
-      if (!board || !moveStack.current) return;
-
-      const tilePos = board[index];
-      const emptyPos = board[emptyTile.current];
-
-      let validMove = false;
-
-      if (tilePos[0] === emptyPos[0])
-        validMove = Math.abs(tilePos[1] - emptyPos[1]) === 1;
-      else if (tilePos[1] === emptyPos[1])
-        validMove = Math.abs(tilePos[0] - emptyPos[0]) === 1;
-
-      const boardCopy = [...board];
-
-      if (validMove) {
-        const emptyPosition = [...board[emptyTile.current]];
-        const tilePosition = [...board[index]];
-
-        boardCopy[emptyTile.current] = tilePosition;
-        boardCopy[index] = emptyPosition;
-
-        numMoves.current += 1;
-
-        moveStack.current.push(board);
-      }
-
-      if (_.isEqual(boardCopy, solution.current)) {
-        setDone(true);
-      }
-
-      setBoard(boardCopy);
-    },
-    [board]
-  );
 
   const shuffle = React.useCallback(() => {
     if (!board) return;
@@ -205,13 +166,19 @@ export default function Home(): JSX.Element {
                     {board.slice(0, -1).map((pos, index) => (
                       <React.Fragment key={`tile ${String(pos)}`}>
                         <Tile
+                          board={board}
                           done={done}
-                          jigsaw={jigsaw.current}
+                          emptyTile={emptyTile.current}
                           index={index}
+                          jigsaw={jigsaw.current}
+                          moveStack={moveStack}
+                          numMoves={numMoves}
                           pos={pos}
+                          solution={solution.current}
                           start={start}
                           square={square.current}
-                          onClick={() => moveTile(index)}
+                          setBoard={setBoard}
+                          setDone={setDone}
                         />
                       </React.Fragment>
                     ))}
